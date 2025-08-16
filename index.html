@@ -1,0 +1,413 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<title>Soura — Drag & Drop Image Downloader</title>
+		<meta name="description" content="Soura Chrome extension: download images faster by dragging any image into a floating dock. Simple, fast, and efficient." />
+		<meta name="theme-color" content="#0f1115" media="(prefers-color-scheme: dark)">
+		<meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+		<style>
+			:root {
+				--bg: #f6f7fb;
+				--text: #0b0d12;
+				--muted: #606776;
+				--card: rgba(255, 255, 255, 0.6);
+				--stroke: rgba(10, 14, 22, 0.08);
+				--accent1: 255, 120, 200;
+				--accent2: 120, 182, 255;
+				--accent3: 120, 255, 195;
+				--glass-blur: 18px;
+				--glass-sat: 1.2;
+				--shadow: 0 10px 30px rgba(0,0,0,0.12), 0 2px 10px rgba(0,0,0,0.06);
+			}
+
+			@media (prefers-color-scheme: dark) {
+				:root {
+					--bg: #0b0d12;
+					--text: #e9edf5;
+					--muted: #a3adc2;
+					--card: rgba(17, 20, 29, 0.6);
+					--stroke: rgba(255, 255, 255, 0.08);
+					--glass-blur: 22px;
+					--glass-sat: 1.4;
+					--shadow: 0 10px 30px rgba(0,0,0,0.5), 0 2px 10px rgba(0,0,0,0.35);
+				}
+			}
+
+			* { box-sizing: border-box; }
+			html, body { height: 100%; }
+			body {
+				margin: 0;
+				font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, Apple Color Emoji, Segoe UI Emoji;
+				color: var(--text);
+				background:
+					radial-gradient(1200px 800px at 20% -10%, rgba(var(--accent2), .22), transparent 60%),
+					radial-gradient(1000px 800px at 120% 10%, rgba(var(--accent1), .20), transparent 60%),
+					radial-gradient(800px 800px at 50% 120%, rgba(var(--accent3), .18), transparent 60%),
+					var(--bg);
+				overflow-x: hidden;
+			}
+
+			/* Subtle noise overlay for liquid glass feel */
+			.noise {
+				position: fixed; inset: 0; pointer-events: none; z-index: 0;
+				background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140' viewBox='0 0 140 140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/fiIteR%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");
+				mix-blend-mode: soft-light;
+			}
+
+			.wrap { position: relative; z-index: 1; }
+
+					header {
+				position: sticky; top: 0; z-index: 10;
+				display: flex; align-items: center; justify-content: space-between;
+				padding: 16px clamp(20px, 6vw, 56px);
+						-webkit-backdrop-filter: blur(12px) saturate(1.2);
+						backdrop-filter: blur(12px) saturate(1.2);
+				background: linear-gradient(to bottom, rgba(255,255,255,0.22), rgba(255,255,255,0)) ;
+				border-bottom: 1px solid var(--stroke);
+			}
+			@media (prefers-color-scheme: dark){
+				header { background: linear-gradient(to bottom, rgba(10,14,22,0.35), rgba(10,14,22,0)); }
+			}
+			.brand { display: flex; align-items: center; gap: 10px; font-weight: 700; letter-spacing: 0.2px; }
+			.brand .logo {
+				width: 34px; height: 34px; border-radius: 12px;
+				background: linear-gradient(135deg, rgba(var(--accent2), .9), rgba(var(--accent1), .9));
+				box-shadow: var(--shadow);
+			}
+			nav a {
+				color: var(--text); text-decoration: none; opacity: 0.9; font-weight: 600;
+				padding: 10px 14px; border-radius: 12px; border: 1px solid transparent;
+			}
+			nav a.cta { border-color: var(--stroke); background: linear-gradient(180deg, rgba(255,255,255,0.55), rgba(255,255,255,0.35)); -webkit-backdrop-filter: blur(14px) saturate(var(--glass-sat)); backdrop-filter: blur(14px) saturate(var(--glass-sat)); }
+			@media (prefers-color-scheme: dark){ nav a.cta { background: linear-gradient(180deg, rgba(20,24,34,0.55), rgba(20,24,34,0.35)); } }
+
+			.hero {
+				display: grid; grid-template-columns: 1.1fr 0.9fr; gap: clamp(20px, 3vw, 40px);
+				align-items: center;
+				padding: min(10vh, 120px) clamp(20px, 6vw, 56px) 40px;
+			}
+			@media (max-width: 960px) { .hero { grid-template-columns: 1fr; padding-top: 48px; } }
+
+			.eyebrow { display: inline-flex; gap: 10px; align-items: center; padding: 6px 10px; border-radius: 999px; border: 1px solid var(--stroke); background: rgba(255,255,255,0.3); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); font-size: 12px; font-weight: 700; letter-spacing: .3px; text-transform: uppercase; }
+			@media (prefers-color-scheme: dark){ .eyebrow { background: rgba(20,24,34,0.4); } }
+
+			h1 { font-size: clamp(34px, 7vw, 56px); line-height: 1.05; margin: 14px 0 16px; }
+			.sub { color: var(--muted); font-size: clamp(15px, 2.2vw, 18px); line-height: 1.6; }
+
+			.cta-row { display: flex; gap: 12px; margin-top: 20px; flex-wrap: wrap; }
+					.btn {
+				position: relative; display: inline-flex; align-items: center; gap: 10px;
+				padding: 12px 18px; border-radius: 14px; border: 1px solid var(--stroke);
+						-webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat));
+						backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat));
+				background: linear-gradient(180deg, rgba(255,255,255,.6), rgba(255,255,255,.35));
+				color: var(--text); text-decoration: none; font-weight: 700;
+				box-shadow: var(--shadow);
+			}
+			.btn.primary { background: linear-gradient(135deg, rgba(var(--accent2), .9), rgba(var(--accent1), .9)); color: #0b0d12; border-color: transparent; }
+			.btn .icon { width: 18px; height: 18px; }
+			@media (prefers-color-scheme: dark){ .btn { background: linear-gradient(180deg, rgba(20,24,34,.65), rgba(20,24,34,.45)); } }
+
+			.hero-gfx {
+				position: relative; min-height: 460px; display: grid; place-items: center;
+			}
+					.phone {
+				position: relative; width: min(440px, 92%); aspect-ratio: 9/16; border-radius: 36px;
+				background: radial-gradient(120% 100% at 0% 0%, rgba(var(--accent2), .22), transparent 50%),
+										radial-gradient(120% 120% at 100% 100%, rgba(var(--accent1), .22), transparent 50%),
+										var(--card);
+				border: 1px solid var(--stroke);
+						-webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat));
+						backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat));
+				box-shadow: var(--shadow);
+				overflow: hidden;
+			}
+			.screen {
+				position: absolute; inset: 14px; border-radius: 28px; overflow: hidden;
+				background: linear-gradient(180deg, rgba(255,255,255,.7), rgba(255,255,255,.4));
+				border: 1px solid var(--stroke);
+			}
+			@media (prefers-color-scheme: dark){ .screen { background: linear-gradient(180deg, rgba(20,24,34,.7), rgba(20,24,34,.45)); } }
+
+			.grid {
+				display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; padding: 16px; height: 100%; overflow: hidden;
+			}
+			.thumb {
+				position: relative; border-radius: 16px; overflow: hidden; border: 1px solid var(--stroke); background: rgba(255,255,255,.5);
+			}
+			@media (prefers-color-scheme: dark){ .thumb { background: rgba(22,26,36,.5); } }
+			.thumb img { width: 100%; height: 100%; object-fit: cover; display: block; pointer-events: none; }
+			.thumb::after { content: ""; position: absolute; inset: 0; box-shadow: inset 0 0 0 1px rgba(255,255,255,.25); pointer-events: none; }
+
+			/* Floating Dock (extension demo) */
+					.dock {
+				position: absolute; right: 14px; bottom: 14px; z-index: 5;
+				display: flex; align-items: center; gap: 10px;
+				padding: 10px 12px; border-radius: 16px; border: 1px solid var(--stroke);
+						background: linear-gradient(180deg, rgba(255,255,255,.75), rgba(255,255,255,.4));
+						-webkit-backdrop-filter: blur(14px) saturate(1.3);
+						backdrop-filter: blur(14px) saturate(1.3);
+				box-shadow: var(--shadow);
+				transition: transform .2s ease, box-shadow .2s ease;
+			}
+			@media (prefers-color-scheme: dark){ .dock { background: linear-gradient(180deg, rgba(20,24,34,.75), rgba(20,24,34,.5)); } }
+			.dock.dragover { transform: scale(1.03); box-shadow: 0 14px 40px rgba(0,0,0,.25); }
+			.dock .dropzone { font-weight: 800; font-size: 13px; letter-spacing: .2px; opacity: .9; }
+			.counter { display: inline-flex; align-items: center; gap: 6px; padding: 6px 8px; border-radius: 999px; background: rgba(255,255,255,.5); border: 1px solid var(--stroke); font-weight: 800; font-size: 12px; }
+			@media (prefers-color-scheme: dark){ .counter { background: rgba(22,26,36,.5); } }
+
+			/* Features */
+			.features { padding: 40px clamp(20px, 6vw, 56px) 80px; }
+			.feat-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+			@media (max-width: 960px){ .feat-grid { grid-template-columns: 1fr; } }
+			.card { border: 1px solid var(--stroke); border-radius: 20px; background: var(--card); -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat)); backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat)); padding: 18px; box-shadow: var(--shadow); }
+			.card h3 { margin: 6px 0 6px; font-size: 18px; }
+			.card p { margin: 0; color: var(--muted); }
+
+			/* How it works */
+			.how { padding: 10px clamp(20px, 6vw, 56px) 90px; }
+			.steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+			@media (max-width: 960px){ .steps { grid-template-columns: 1fr; } }
+			.step { padding: 18px; border-radius: 16px; border: 1px solid var(--stroke); background: linear-gradient(180deg, rgba(255,255,255,.6), rgba(255,255,255,.35)); -webkit-backdrop-filter: blur(14px) saturate(1.2); backdrop-filter: blur(14px) saturate(1.2); box-shadow: var(--shadow); }
+			@media (prefers-color-scheme: dark){ .step { background: linear-gradient(180deg, rgba(20,24,34,.65), rgba(20,24,34,.45)); } }
+			.step b { display: inline-flex; width: 28px; height: 28px; border-radius: 8px; align-items: center; justify-content: center; margin-right: 10px; background: linear-gradient(135deg, rgba(var(--accent2), .9), rgba(var(--accent1), .9)); color: #0b0d12; }
+
+			footer { padding: 30px clamp(20px, 6vw, 56px); color: var(--muted); border-top: 1px solid var(--stroke); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); }
+			footer a { color: inherit; }
+
+			/* Overscroll stretch targets */
+			.stretchable { will-change: transform; transform-origin: center; }
+
+			/* Small pulse for successful drop */
+			@keyframes pulse {
+				0% { transform: scale(1); }
+				40% { transform: scale(1.06); }
+				100% { transform: scale(1); }
+			}
+			.pulse { animation: pulse .35s ease; }
+
+			/* Visually-hidden for a11y */
+			.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+		</style>
+	</head>
+	<body>
+		<div class="noise" aria-hidden="true"></div>
+		<div class="wrap">
+			<header class="stretchable">
+				<div class="brand">
+					<div class="logo" aria-hidden="true"><img src="logo.png" alt="Soura Logo" style="position: relative;height: 40px;"></div>
+					<span>Soura</span>
+				</div>
+				<nav>
+					<a class="cta" href="https://github.com/Syrthax/soura" target="_blank" rel="noreferrer noopener" aria-label="View on GitHub">GitHub</a>
+				</nav>
+			</header>
+
+			<main>
+				<section class="hero stretchable" id="top">
+					<div>
+						<span class="eyebrow">Soura</span>
+						<h1>Download images faster. Just drag & drop.</h1>
+						<p class="sub">Soura lets you grab images from any page by simply dragging them into a floating dock at the bottom‑right. Batch more, click less.</p>
+						<div class="cta-row">
+							<a class="btn primary" href="https://github.com/Syrthax/soura" target="_blank" rel="noreferrer noopener">
+								<svg class="icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .5a12 12 0 0 0-3.793 23.4c.6.111.82-.261.82-.582 0-.287-.01-1.047-.016-2.055-3.338.726-4.042-1.61-4.042-1.61-.545-1.384-1.333-1.753-1.333-1.753-1.09-.745.082-.73.082-.73 1.205.085 1.84 1.238 1.84 1.238 1.072 1.836 2.812 1.305 3.497.997.108-.777.42-1.305.763-1.606-2.665-.303-5.466-1.332-5.466-5.932 0-1.31.469-2.381 1.236-3.221-.124-.303-.536-1.523.117-3.176 0 0 1.008-.322 3.3 1.23a11.49 11.49 0 0 1 3.005-.404c1.02.005 2.047.138 3.005.404 2.291-1.552 3.297-1.23 3.297-1.23.655 1.653.243 2.873.12 3.176.77.84 1.235 1.911 1.235 3.221 0 4.61-2.805 5.625-5.476 5.921.432.373.817 1.103.817 2.223 0 1.604-.015 2.896-.015 3.291 0 .323.216.699.826.58A12.001 12.001 0 0 0 12 .5Z"/></svg>
+								View on GitHub
+							</a>
+							<a class="btn" href="#how">How it works</a>
+						</div>
+					</div>
+
+					<div class="hero-gfx stretchable">
+						<div class="phone" aria-label="Soura demo phone mockup">
+							<div class="screen">
+								<div class="grid" id="demo-grid" aria-label="Drag any image into the dock to simulate a download">
+									<!-- Demo thumbnails (data-URI based for offline) -->
+									<div class="thumb" draggable="true"><img alt="Demo 1" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='600' height='600'%3E%3Cdefs%3E%3ClinearGradient id='g1' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%2378b6ff'/%3E%3Cstop offset='1' stop-color='%23ff78c8'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='600' height='600' fill='url(%23g1)'/%3E%3Ccircle cx='300' cy='300' r='160' fill='rgba(255,255,255,0.5)'/%3E%3C/svg%3E"/></div>
+									<div class="thumb" draggable="true"><img alt="Demo 2" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='600' height='600'%3E%3Cdefs%3E%3CradialGradient id='g2' cx='50%25' cy='50%25' r='65%25'%3E%3Cstop offset='0%25' stop-color='%2378ffc3'/%3E%3Cstop offset='100%25' stop-color='%230b0d12'/%3E%3C/radialGradient%3E%3C/defs%3E%3Crect width='600' height='600' fill='url(%23g2)'/%3E%3C/svg%3E"/></div>
+									<div class="thumb" draggable="true"><img alt="Demo 3" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='600' height='600'%3E%3Cdefs%3E%3ClinearGradient id='g3' x1='0' y1='0' x2='0' y2='1'%3E%3Cstop offset='0' stop-color='%23ffde78'/%3E%3Cstop offset='1' stop-color='%2378b6ff'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='600' height='600' fill='url(%23g3)'/%3E%3Crect x='120' y='120' width='360' height='360' rx='60' fill='rgba(0,0,0,0.3)'/%3E%3C/svg%3E"/></div>
+									<div class="thumb" draggable="true"><img alt="Demo 4" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='600' height='600'%3E%3Cdefs%3E%3ClinearGradient id='g4' x1='1' y1='0' x2='0' y2='1'%3E%3Cstop offset='0' stop-color='%2378b6ff'/%3E%3Cstop offset='1' stop-color='%2378ffc3'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='600' height='600' fill='url(%23g4)'/%3E%3Ccircle cx='200' cy='220' r='80' fill='rgba(255,255,255,0.45)'/%3E%3Ccircle cx='380' cy='380' r='120' fill='rgba(255,255,255,0.35)'/%3E%3C/svg%3E"/></div>
+									<div class="thumb" draggable="true"><img alt="Demo 5" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='600' height='600'%3E%3Cdefs%3E%3ClinearGradient id='g5' x1='0' y1='1' x2='1' y2='0'%3E%3Cstop offset='0' stop-color='%23ff78c8'/%3E%3Cstop offset='1' stop-color='%2378ffc3'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='600' height='600' fill='url(%23g5)'/%3E%3Cpath d='M0,380 C120,320 200,420 300,380 C400,340 480,420 600,360 L600,600 L0,600 Z' fill='rgba(255,255,255,0.35)'/%3E%3C/svg%3E"/></div>
+									<div class="thumb" draggable="true"><img alt="Demo 6" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='600' height='600'%3E%3Crect width='600' height='600' fill='%230b0d12'/%3E%3Cpath d='M0,160 Q300,320 600,160 L600,600 L0,600 Z' fill='%2378b6ff' opacity='.35'/%3E%3Cpath d='M0,240 Q300,120 600,240' stroke='%23ff78c8' stroke-width='40' opacity='.25'/%3E%3C/svg%3E"/></div>
+								</div>
+								<div class="dock" id="dock" aria-live="polite">
+									<svg class="icon" viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true"><path d="M5 3a2 2 0 0 0-2 2v12.5A3.5 3.5 0 0 0 6.5 21h11a3.5 3.5 0 0 0 3.5-3.5V7a2 2 0 0 0-2-2h-5.586l-2-2H5Z"/><path d="M12 9v6m-3-3h6" stroke="#0b0d12" stroke-width="1.5" stroke-linecap="round"/></svg>
+									<span class="dropzone">Drop to save</span>
+									<span class="counter" id="counter">0</span>
+								</div>
+							</div>
+						</div>
+					</div>
+				</section>
+
+				<section class="features">
+					<div class="feat-grid">
+						<article class="card">
+							<h3>Drag to the Dock</h3>
+							<p>Just drag images and drop them onto the bottom‑right dock. Soura queues the download immediately.</p>
+						</article>
+						<article class="card">
+							<h3>Batch Downloads</h3>
+							<p>Collect multiple images quickly without leaving the page. Minimal clicks, maximum flow.</p>
+						</article>
+						<article class="card">
+							<h3>Light & Dark</h3>
+							<p>Automatically adapts to your device theme. Bright days, mellow nights.</p>
+						</article>
+					</div>
+				</section>
+
+				<section id="how" class="how">
+					<h2 class="sr-only">How it works</h2>
+					<div class="steps">
+						<div class="step"><p><b>1</b> Install from <a href="https://github.com/Syrthax/soura" target="_blank" rel="noreferrer noopener">GitHub</a>.</p></div>
+						<div class="step"><p><b>2</b> Visit any page, then drag an image toward the bottom‑right.</p></div>
+						<div class="step"><p><b>3</b> Drop on the dock. Done. Keep going to save more.</p></div>
+					</div>
+				</section>
+			</main>
+
+			<footer class="stretchable">
+				<div>© <span id="year"></span> Soura. Built by <strong>Sarthak</strong>. <a href="https://github.com/Syrthax/" target="_blank" rel="noreferrer noopener">GitHub</a></div>
+			</footer>
+		</div>
+
+		<script>
+			// Year
+			document.getElementById('year').textContent = new Date().getFullYear();
+
+			// Drag-to-dock demo
+			const dock = document.getElementById('dock');
+			const counterEl = document.getElementById('counter');
+			let count = 0;
+
+			// Allow dragging the demo thumbnails
+			document.querySelectorAll('.thumb').forEach((t, i) => {
+				t.addEventListener('dragstart', (e) => {
+					const img = t.querySelector('img');
+					e.dataTransfer.setData('text/uri-list', img.currentSrc || img.src);
+					e.dataTransfer.setDragImage(img, img.width/2, img.height/2);
+				});
+			});
+
+			// Dock behavior
+			const preventDefaults = (e) => { e.preventDefault(); e.stopPropagation(); };
+			['dragenter', 'dragover'].forEach(evt => dock.addEventListener(evt, (e) => {
+				preventDefaults(e);
+				dock.classList.add('dragover');
+			}));
+			;['dragleave', 'drop'].forEach(evt => dock.addEventListener(evt, (e) => {
+				preventDefaults(e);
+				if (evt === 'drop') handleDrop(e);
+				dock.classList.remove('dragover');
+			}));
+
+			async function handleDrop(e){
+				const dt = e.dataTransfer;
+				const files = [...(dt.files || [])].filter(f => f.type.startsWith('image/'));
+				const urls = dt.getData('text/uri-list')?.split('\n').filter(Boolean) || [];
+
+				// Prefer dropped files (safe), else attempt to use provided URLs (same-origin likely).
+				const toDownload = files.map(f => ({ name: f.name, blob: f }))
+					.concat(urls.map((u, idx) => ({ url: u, name: `image-${Date.now()}-${idx}.png` })));
+
+				if (toDownload.length === 0) {
+					// Fallback: if user dragged a demo tile, count it.
+					bump();
+					return;
+				}
+
+				for (const item of toDownload) {
+					try {
+						if (item.blob) {
+							triggerDownload(URL.createObjectURL(item.blob), item.name);
+						} else if (item.url) {
+							// Try to fetch; if CORS blocks, just count it without download.
+							try {
+								const res = await fetch(item.url, { mode: 'cors' });
+								const blob = await res.blob();
+								const ext = blob.type.split('/')[1] || 'png';
+								triggerDownload(URL.createObjectURL(blob), item.name.replace(/\.png$/, '.'+ext));
+							} catch { bump(); }
+						}
+					} catch {
+						bump();
+					}
+				}
+				bump(toDownload.length);
+				dock.classList.add('pulse');
+				setTimeout(() => dock.classList.remove('pulse'), 400);
+			}
+
+			function triggerDownload(href, name){
+				const a = document.createElement('a');
+				a.href = href; a.download = name; a.rel = 'noopener';
+				document.body.appendChild(a); a.click(); a.remove();
+				// do not revokeObjectURL immediately; allow browser to start download
+				setTimeout(() => URL.revokeObjectURL(href), 5000);
+			}
+
+			function bump(n = 1){ count += n; counterEl.textContent = String(count); }
+
+			// Overscroll stretch effect: gently scale key sections when user scrolls beyond the page limits
+			const stretchTargets = document.querySelectorAll('.stretchable');
+			let y0 = 0, isTouching = false, overscroll = 0, raf = null, decayId = null;
+
+			const atTop = () => (window.scrollY || document.documentElement.scrollTop) <= 0;
+			const atBottom = () => (window.innerHeight + (window.scrollY || document.documentElement.scrollTop) >= document.documentElement.scrollHeight - 1);
+
+			function applyStretch(){
+				const amt = Math.min(0.15, Math.abs(overscroll) / 600); // max 15%
+				const scaleY = 1 + amt;
+				const translateY = overscroll < 0 ? amt * 6 : -amt * 6; // tiny shift toward pull
+				stretchTargets.forEach(el => {
+					el.style.transform = `translateY(${translateY}px) scaleY(${scaleY})`;
+				});
+			}
+
+			function release(){
+				cancelAnimationFrame(raf);
+				if (decayId) cancelAnimationFrame(decayId);
+				function decay(){
+					overscroll *= 0.78;
+					if (Math.abs(overscroll) < 0.5){ overscroll = 0; }
+					applyStretch();
+					if (overscroll !== 0){ decayId = requestAnimationFrame(decay); }
+					else {
+						stretchTargets.forEach(el => { el.style.transform = 'none'; });
+					}
+				}
+				decayId = requestAnimationFrame(decay);
+			}
+
+			// Wheel (desktop)
+			window.addEventListener('wheel', (e) => {
+				const dy = e.deltaY;
+				if ((dy < 0 && atTop()) || (dy > 0 && atBottom())){
+					overscroll += dy * 0.25;
+					overscroll = Math.max(-180, Math.min(180, overscroll));
+					cancelAnimationFrame(raf);
+					raf = requestAnimationFrame(applyStretch);
+					clearTimeout(window.__relTimer);
+					window.__relTimer = setTimeout(release, 60);
+				}
+			}, { passive: true });
+
+			// Touch (mobile)
+			window.addEventListener('touchstart', (e) => { isTouching = true; y0 = e.touches[0].clientY; }, { passive: true });
+			window.addEventListener('touchmove', (e) => {
+				if (!isTouching) return;
+				const dy = e.touches[0].clientY - y0; // positive when pulling down
+				if ((dy > 0 && atTop()) || (dy < 0 && atBottom())){
+					overscroll = dy * 0.6;
+					cancelAnimationFrame(raf);
+					raf = requestAnimationFrame(applyStretch);
+				}
+			}, { passive: true });
+			window.addEventListener('touchend', () => { isTouching = false; release(); }, { passive: true });
+		</script>
+	</body>
+</html>
+
