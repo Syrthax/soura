@@ -1,0 +1,24 @@
+{
+  "manifest_version": 3,
+  "name": "Image Drag & Download",
+  "version": "1.0",
+  "description": "Blur page and show popup to download images when dragged.",
+  "permissions": ["downloads", "scripting"],
+  "host_permissions": ["<all_urls>"],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"],
+      "css": ["content.css"]
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["popup.html", "popup.js", "popup.css"],
+      "matches": ["<all_urls>"]
+    }
+  ]
+}
