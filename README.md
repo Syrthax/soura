@@ -2,7 +2,7 @@
 
 Download images faster: drag any image and drop it on the bottom‑right popup to save it instantly.
 
-![Soura demo](https://syrthax.github.io/soura/assets/gdalph1.gif)
+![Soura demo](/assets/gdalph1.gif)
 
 ## Features
 
