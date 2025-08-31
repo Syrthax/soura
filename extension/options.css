@@ -1,0 +1,9 @@
+body{font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial;margin:0;padding:24px;color:#222}
+#opt{max-width:720px;margin:0 auto}
+h2{margin:0 0 8px 0}
+#opt p{margin:0 0 16px 0;color:#444}
+input{width:100%;padding:8px 10px;border:1px solid #ddd;border-radius:8px;box-sizing:border-box}
+.controls{margin-top:12px;display:flex;gap:8px}
+button{padding:8px 12px;border-radius:8px;border:1px solid #ccc;background:#fff;cursor:pointer}
+button.primary{background:#0b84ff;color:#fff;border-color:#0b84ff}
+.status{margin-top:10px;min-height:18px;font-size:12px;color:#444}

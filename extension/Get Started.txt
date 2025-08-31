@@ -1,0 +1,7 @@
+1. Download the .zip file. 
+2. Extract the .zip file contents to your desired folder.
+3. Open any chrome based browser.
+4. Open the extension settings usually their URL will be something like: "chrome://extensions/","edge://extensions/"
+5. Toggle on the developer mode, usually the toggle or the option for it is at the top right corner of the webpage
+6. Once the developer mode is on click on the "load unpacked" button on the webpage
+7. select this folder to load soura.

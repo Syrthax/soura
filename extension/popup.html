@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Image Downloader Popup</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div id="popup-container">
+    <h4 class="title">Soura — Download folder</h4>
+    <div id="soura-settings" class="settings">
+      <label for="folder-input" class="label">Custom folder (relative to Downloads):</label>
+      <input id="folder-input" class="input" type="text" placeholder="e.g. Soura/Images" />
+      <div class="controls">
+        <button id="choose-folder" class="btn">Choose folder</button>
+      </div>
+      <div class="controls">
+        <button id="save-folder" class="btn primary">Save</button>
+        <button id="reset-folder" class="btn">Reset</button>
+      </div>
+      <div class="controls">
+        <button id="test-download" class="btn">Test download</button>
+      </div>
+      <div id="save-status" class="status"></div>
+      <div class="hint">Note: Soura saves inside your Downloads folder. Example: Downloads/<span id="hint-folder">YourFolder</span></div>
+    </div>
+  </div>
+  <script src="popup.js"></script>
+</body>
+</html>

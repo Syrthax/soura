@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Soura — Options</title>
+  <link rel="stylesheet" href="options.css" />
+</head>
+<body>
+  <main id="opt">
+    <h2>Soura Settings</h2>
+    <p>Choose a custom folder inside your Downloads directory for saved images.</p>
+    <label for="opt-folder">Folder (relative to Downloads):</label>
+    <input id="opt-folder" type="text" placeholder="e.g., Soura/Images" />
+    <div class="controls">
+      <button id="opt-choose">Choose folder</button>
+      <button id="opt-save" class="primary">Save</button>
+      <button id="opt-reset">Reset</button>
+    </div>
+    <div id="opt-status" class="status"></div>
+  </main>
+  <script src="options.js"></script>
+</body>
+</html>
