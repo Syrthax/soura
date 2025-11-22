@@ -2,78 +2,72 @@
 // Year
     document.getElementById('year').textContent = new Date().getFullYear();
 
-// Drag-to-dock demo
-const dock = document.getElementById('dock');
-const counterEl = document.getElementById('counter');
-let count = 0;
-
-// Allow dragging the demo thumbnails
-document.querySelectorAll('.thumb').forEach((t, i) => {
-    t.addEventListener('dragstart', (e) => {
-        const img = t.querySelector('img');
-        e.dataTransfer.setData('text/uri-list', img.currentSrc || img.src);
-        e.dataTransfer.setDragImage(img, img.width/2, img.height/2);
+// Theme toggle functionality
+const themeToggle = document.getElementById('theme-toggle');
+if (themeToggle) {
+    // Initialize theme on page load
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme) {
+        document.documentElement.setAttribute('data-theme', savedTheme);
+    } else {
+        // Set default to light theme if no preference saved
+        document.documentElement.setAttribute('data-theme', 'light');
+    }
+    
+    // Toggle theme on click
+    themeToggle.addEventListener('click', () => {
+        const currentTheme = document.documentElement.getAttribute('data-theme');
+        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+        
+        document.documentElement.setAttribute('data-theme', newTheme);
+        localStorage.setItem('theme', newTheme);
+        
+        // Add animation effect
+        themeToggle.style.transform = 'rotate(360deg) scale(1.2)';
+        setTimeout(() => {
+            themeToggle.style.transform = '';
+        }, 400);
     });
-});
+}
 
-// Dock behavior
-const preventDefaults = (e) => { e.preventDefault(); e.stopPropagation(); };
-['dragenter', 'dragover'].forEach(evt => dock.addEventListener(evt, (e) => {
-    preventDefaults(e);
-    dock.classList.add('dragover');
-}));
-;['dragleave', 'drop'].forEach(evt => dock.addEventListener(evt, (e) => {
-    preventDefaults(e);
-    if (evt === 'drop') handleDrop(e);
-    dock.classList.remove('dragover');
-}));
+// Animated demo progress indicators
+const progressDots = document.querySelectorAll('.progress-dot');
+if (progressDots.length > 0) {
+    let currentStep = 0;
+    setInterval(() => {
+        progressDots.forEach((dot, i) => {
+            dot.classList.toggle('active', i === currentStep);
+        });
+        currentStep = (currentStep + 1) % progressDots.length;
+    }, 2000); // 8s animation / 4 steps = 2s per step
+}
 
-async function handleDrop(e){
-    const dt = e.dataTransfer;
-    const files = [...(dt.files || [])].filter(f => f.type.startsWith('image/'));
-    const urls = dt.getData('text/uri-list')?.split('\n').filter(Boolean) || [];
+// Auto-hide dock on scroll
+const dock = document.querySelector('.floating-dock');
+if (dock) {
+    let lastScrollY = window.scrollY;
+    let ticking = false;
 
-    // Prefer dropped files (safe), else attempt to use provided URLs (same-origin likely).
-    const toDownload = files.map(f => ({ name: f.name, blob: f }))
-        .concat(urls.map((u, idx) => ({ url: u, name: `image-${Date.now()}-${idx}.png` })));
-
-    if (toDownload.length === 0) {
-        // Fallback: if user dragged a demo tile, count it.
-        bump();
-        return;
-    }
-
-    for (const item of toDownload) {
-        try {
-            if (item.blob) {
-                triggerDownload(URL.createObjectURL(item.blob), item.name);
-            } else if (item.url) {
-                // Try to fetch; if CORS blocks, just count it without download.
-                try {
-                    const res = await fetch(item.url, { mode: 'cors' });
-                    const blob = await res.blob();
-                    const ext = blob.type.split('/')[1] || 'png';
-                    triggerDownload(URL.createObjectURL(blob), item.name.replace(/\.png$/, '.'+ext));
-                } catch { bump(); }
-            }
-        } catch {
-            bump();
+    window.addEventListener('scroll', () => {
+        if (!ticking) {
+            window.requestAnimationFrame(() => {
+                const currentScrollY = window.scrollY;
+                
+                if (currentScrollY > lastScrollY && currentScrollY > 100) {
+                    // Scrolling down - hide dock
+                    dock.classList.add('dock-hidden');
+                } else {
+                    // Scrolling up - show dock
+                    dock.classList.remove('dock-hidden');
+                }
+                
+                lastScrollY = currentScrollY;
+                ticking = false;
+            });
+            ticking = true;
         }
-    }
-    bump(toDownload.length);
-    dock.classList.add('pulse');
-    setTimeout(() => dock.classList.remove('pulse'), 400);
+    }, { passive: true });
 }
-
-function triggerDownload(href, name){
-    const a = document.createElement('a');
-    a.href = href; a.download = name; a.rel = 'noopener';
-    document.body.appendChild(a); a.click(); a.remove();
-    // do not revokeObjectURL immediately; allow browser to start download
-    setTimeout(() => URL.revokeObjectURL(href), 5000);
-}
-
-function bump(n = 1){ count += n; counterEl.textContent = String(count); }
 
 // Overscroll stretch effect: gently scale key sections when user scrolls beyond the page limits
 const stretchTargets = document.querySelectorAll('.stretchable');
