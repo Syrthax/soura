@@ -1,51 +1,225 @@
+/**
+ * Soura Content Styles
+ * Apple-inspired liquid glass floating dock
+ */
 
-
-#img-drag-popup {
-	position: fixed;
-	bottom: 24px;
-	right: 24px;
-	width: 380px;
-	height: 240px;
-	z-index: 9999;
-	pointer-events: auto;
-}
-#img-drag-popup .idp-inner {
-	width: 100%;
-	height: 100%;
-	background: rgba(255,255,255,0.98);
-	border-radius: 12px;
-	box-shadow: 0 2px 12px rgba(0,0,0,0.2);
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-	justify-content: center;
-	font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-}
-#img-drag-popup .idp-drop {
-	width: 200px;
-	height: 160px;
-	border: 2px dashed #888;
-	border-radius: 8px;
-	background: #f9f9f9;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	margin-top: 12px;
-	cursor: pointer;
-	transition: background 0.2s, border-color 0.2s;
-}
-#img-drag-popup .idp-drop.dragover {
-	background: #e0ffe0;
-	border-color: #2a9d8f;
+/* Blur Overlay */
+#soura-blur-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.05);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  z-index: 2147483645;
+  pointer-events: none;
+  transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+              backdrop-filter 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-#img-drag-popup .idp-title {
-	font-size: 16px;
-	margin: 0 0 6px 0;
+#soura-blur-overlay.soura-overlay-hidden {
+  opacity: 0;
+  backdrop-filter: blur(0px);
+  -webkit-backdrop-filter: blur(0px);
 }
 
-#img-drag-popup .idp-help {
-	font-size: 12px;
-	color: #555;
-	margin-top: 6px;
+#soura-blur-overlay.soura-overlay-visible {
+  opacity: 1;
+}
+
+@media (prefers-color-scheme: dark) {
+  #soura-blur-overlay {
+    background: rgba(0, 0, 0, 0.15);
+  }
+}
+
+/* Dock Container */
+#soura-dock {
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 2147483647;
+  pointer-events: none;
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+#soura-dock.soura-hidden {
+  transform: translateX(-50%) translateY(120px);
+}
+
+#soura-dock.soura-visible {
+  transform: translateX(-50%) translateY(-32px);
+  pointer-events: all;
+}
+
+/* Drop Zone Pill */
+#soura-drop-zone {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 28px;
+  border-radius: 32px;
+  
+  /* Frosted glass effect */
+  background: rgba(255, 255, 255, 0.85);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  backdrop-filter: blur(20px) saturate(180%);
+  
+  /* Shadows for depth */
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.12),
+    0 2px 8px rgba(0, 0, 0, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.5);
+  
+  /* Border for definition */
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  
+  /* Animation */
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  cursor: pointer;
+  
+  /* Typography */
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif;
+  font-size: 15px;
+  font-weight: 500;
+  color: #1d1d1f;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  #soura-drop-zone {
+    background: rgba(30, 30, 30, 0.85);
+    color: #f5f5f7;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    box-shadow: 
+      0 8px 32px rgba(0, 0, 0, 0.4),
+      0 2px 8px rgba(0, 0, 0, 0.3),
+      inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  }
+}
+
+/* Hover State */
+#soura-drop-zone.soura-hover {
+  transform: scale(1.18);
+  background: rgba(0, 122, 255, 0.9);
+  color: white;
+  box-shadow: 
+    0 12px 48px rgba(0, 122, 255, 0.4),
+    0 4px 16px rgba(0, 122, 255, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+}
+
+@media (prefers-color-scheme: dark) {
+  #soura-drop-zone.soura-hover {
+    background: rgba(10, 132, 255, 0.9);
+  }
+}
+
+/* Downloading State */
+#soura-drop-zone.soura-downloading {
+  transform: scale(0.95);
+  animation: soura-pulse 1s ease-in-out infinite;
+}
+
+@keyframes soura-pulse {
+  0%, 100% { 
+    transform: scale(0.95);
+    opacity: 1;
+  }
+  50% { 
+    transform: scale(1.02);
+    opacity: 0.9;
+  }
+}
+
+/* Success State */
+#soura-drop-zone.soura-success {
+  background: rgba(52, 199, 89, 0.9);
+  color: white;
+  transform: scale(1.05);
+  box-shadow: 
+    0 12px 48px rgba(52, 199, 89, 0.4),
+    0 4px 16px rgba(52, 199, 89, 0.3);
+  animation: soura-success 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes soura-success {
+  0% { 
+    transform: scale(0.9);
+    opacity: 0.8;
+  }
+  50% { 
+    transform: scale(1.12);
+  }
+  100% { 
+    transform: scale(1.05);
+    opacity: 1;
+  }
+}
+
+/* Error State */
+#soura-drop-zone.soura-error {
+  background: rgba(255, 59, 48, 0.9);
+  color: white;
+  transform: scale(1);
+  animation: soura-shake 0.5s cubic-bezier(0.36, 0.07, 0.19, 0.97);
+}
+
+@keyframes soura-shake {
+  0%, 100% { transform: translateX(0); }
+  10%, 30%, 50%, 70%, 90% { transform: translateX(-4px); }
+  20%, 40%, 60%, 80% { transform: translateX(4px); }
+}
+
+/* Icon Styles */
+.soura-icon {
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+  stroke-width: 2;
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+#soura-drop-zone.soura-hover .soura-icon {
+  transform: translateY(-2px);
+}
+
+#soura-drop-zone.soura-success .soura-icon.soura-checkmark {
+  animation: soura-checkmark-draw 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes soura-checkmark-draw {
+  0% {
+    opacity: 0;
+    transform: scale(0.5) rotate(-45deg);
+  }
+  50% {
+    transform: scale(1.2) rotate(0deg);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) rotate(0deg);
+  }
+}
+
+/* Text */
+.soura-text {
+  white-space: nowrap;
+  letter-spacing: -0.01em;
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  #soura-dock,
+  #soura-drop-zone,
+  .soura-icon {
+    transition: none;
+    animation: none;
+  }
 }
