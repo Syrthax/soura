@@ -6,7 +6,7 @@ Download images faster: drag any image and drop it on the bottom‑right popup t
 
 https://github.com/user-attachments/assets/Screen%20Recording%202025-12-09%20at%2012.03.35.mov
 
-![Soura demo](/assets/gdalph1.gif)
+![Soura demo](/assets/demo.mov)
 
 ## Features
 
