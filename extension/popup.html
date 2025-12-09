@@ -3,27 +3,39 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Image Downloader Popup</title>
+  <title>Soura</title>
   <link rel="stylesheet" href="popup.css">
 </head>
 <body>
-  <div id="popup-container">
-    <h4 class="title">Soura — Download folder</h4>
-    <div id="soura-settings" class="settings">
-      <label for="folder-input" class="label">Custom folder (relative to Downloads):</label>
-      <input id="folder-input" class="input" type="text" placeholder="e.g. Soura/Images" />
-      <div class="controls">
-        <button id="choose-folder" class="btn">Choose folder</button>
+  <div class="popup-container">
+    <div class="header">
+      <h1 class="title">Soura</h1>
+      <p class="subtitle">Drag & Drop Image Downloader</p>
+    </div>
+    
+    <div class="content">
+      <div class="folder-display">
+        <div class="label">Download folder</div>
+        <div id="current-folder" class="folder-path">Downloads/</div>
       </div>
-      <div class="controls">
-        <button id="save-folder" class="btn primary">Save</button>
-        <button id="reset-folder" class="btn">Reset</button>
+      
+      <button id="change-folder-btn" class="btn-primary">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+        </svg>
+        Change Folder
+      </button>
+
+      <div class="divider"></div>
+
+      <div class="info">
+        <div class="info-item">
+          <span class="info-label">Images downloaded:</span>
+          <span id="download-count" class="info-value">0</span>
+        </div>
       </div>
-      <div class="controls">
-        <button id="test-download" class="btn">Test download</button>
-      </div>
-      <div id="save-status" class="status"></div>
-      <div class="hint">Note: Soura saves inside your Downloads folder. Example: Downloads/<span id="hint-folder">YourFolder</span></div>
+
+      <a href="options.html" target="_blank" class="link-settings">Settings</a>
     </div>
   </div>
   <script src="popup.js"></script>

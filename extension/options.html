@@ -3,22 +3,91 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Soura — Options</title>
+  <title>Soura Settings</title>
   <link rel="stylesheet" href="options.css" />
 </head>
 <body>
-  <main id="opt">
-    <h2>Soura Settings</h2>
-    <p>Choose a custom folder inside your Downloads directory for saved images.</p>
-    <label for="opt-folder">Folder (relative to Downloads):</label>
-    <input id="opt-folder" type="text" placeholder="e.g., Soura/Images" />
-    <div class="controls">
-      <button id="opt-choose">Choose folder</button>
-      <button id="opt-save" class="primary">Save</button>
-      <button id="opt-reset">Reset</button>
-    </div>
-    <div id="opt-status" class="status"></div>
-  </main>
+  <div class="container">
+    <header class="header">
+      <div class="icon-wrapper">
+        <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
+          <circle cx="32" cy="32" r="32" fill="url(#gradient)"/>
+          <path d="M42 28v8a4 4 0 0 1-4 4H26a4 4 0 0 1-4-4v-8" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+          <polyline points="28 32 32 36 36 32" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+          <line x1="32" y1="36" x2="32" y2="24" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+          <defs>
+            <linearGradient id="gradient" x1="0" y1="0" x2="64" y2="64">
+              <stop offset="0%" stop-color="#007aff"/>
+              <stop offset="100%" stop-color="#5856d6"/>
+            </linearGradient>
+          </defs>
+        </svg>
+      </div>
+      <h1 class="title">Welcome to Soura</h1>
+      <p class="subtitle">Drag & Drop Image Downloader</p>
+    </header>
+
+    <main class="content">
+      <section class="card">
+        <h2 class="card-title">How to Use</h2>
+        <ol class="steps">
+          <li>Visit any website with images</li>
+          <li>Drag any image toward the bottom of the screen</li>
+          <li>Drop it on the floating dock that appears</li>
+          <li>Your image downloads automatically!</li>
+        </ol>
+      </section>
+
+      <section class="card">
+        <h2 class="card-title">Download Settings</h2>
+        
+        <div class="form-group">
+          <label for="folder-input" class="label">Download Folder</label>
+          <p class="description">Choose where images are saved (relative to your Downloads folder)</p>
+          <input 
+            type="text" 
+            id="folder-input" 
+            class="input" 
+            placeholder="e.g., Soura, Images/Soura, Pictures/Downloaded"
+          />
+        </div>
+
+        <div class="button-group">
+          <button id="save-btn" class="btn btn-primary">Save Settings</button>
+          <button id="reset-btn" class="btn btn-secondary">Reset to Default</button>
+        </div>
+
+        <div id="status" class="status"></div>
+
+        <div class="info-box">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/>
+            <line x1="12" y1="16" x2="12" y2="12"/>
+            <line x1="12" y1="8" x2="12.01" y2="8"/>
+          </svg>
+          <div>
+            <strong>Tip:</strong> Leave empty to save directly in Downloads folder. 
+            Use folder paths like <code>Soura</code> or <code>Images/Soura</code> to organize your downloads.
+          </div>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2 class="card-title">Statistics</h2>
+        <div class="stat">
+          <span class="stat-label">Total Images Downloaded</span>
+          <span id="download-count" class="stat-value">0</span>
+        </div>
+        <button id="reset-counter-btn" class="btn btn-secondary btn-small">Reset Counter</button>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <p>Made with ♥ by the Soura Team</p>
+      <p class="version">Version 2.0.0</p>
+    </footer>
+  </div>
+
   <script src="options.js"></script>
 </body>
 </html>

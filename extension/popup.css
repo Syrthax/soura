@@ -1,108 +1,218 @@
-#popup-container {
-  width: 320px;
-  min-width: 300px;
-  height: auto;
-  background: rgba(255,255,255,0.95);
-  border-radius: 12px;
-  box-shadow: 0 2px 12px rgba(0,0,0,0.2);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 12px;
-  box-sizing: border-box;
-}
-#drop-area {
-  width: 120px;
-  height: 120px;
-  border: 2px dashed #888;
-  border-radius: 8px;
-  background: #f9f9f9;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-top: 12px;
-  cursor: pointer;
-  transition: background 0.2s;
-}
+/**
+ * Soura Popup Styles
+ * Apple-inspired minimal design
+ */
 
-/* Ensure the popup window itself has predictable sizing */
-html, body {
+* {
   margin: 0;
   padding: 0;
-  width: 100%;
-  font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
-  color: #222;
+  box-sizing: border-box;
+}
+
+html, body {
+  width: 320px;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif;
   -webkit-font-smoothing: antialiased;
+  color: #1d1d1f;
+  background: #ffffff;
 }
 
-/* Make input and buttons fit the popup width */
-.input, .controls, .status, .settings {
-  width: 100%;
+@media (prefers-color-scheme: dark) {
+  html, body {
+    background: #1c1c1e;
+    color: #f5f5f7;
+  }
 }
 
-/* Small responsive tweak: if Chrome allows wider popup, cap at 420px */
-#popup-container {
-  max-width: 420px;
+.popup-container {
+  padding: 20px;
+}
+
+/* Header */
+.header {
+  text-align: center;
+  margin-bottom: 24px;
 }
 
 .title {
-  margin: 0;
-  font-size: 14px;
-  color: #222;
-}
-.separator {
-  width: 92%;
-  margin: 12px 0;
-  border: none;
-  height: 1px;
-  background: #eee;
-}
-.settings {
-  width: 92%;
-  display: flex;
-  flex-direction: column;
-  align-items: stretch;
-}
-.label {
-  font-size: 12px;
-  color: #333;
-}
-.input {
-  margin-top: 6px;
-  padding: 6px 8px;
-  border-radius: 6px;
-  border: 1px solid #ddd;
-  width: 100%;
-  box-sizing: border-box;
-}
-.controls {
-  margin-top: 8px;
-  display: flex;
-  justify-content: flex-end;
-  gap: 8px;
-}
-.btn {
-  padding: 6px 10px;
-  border-radius: 6px;
-  border: 1px solid #ccc;
-  background: #fff;
-  cursor: pointer;
-}
-.btn.primary {
-  background: #0b84ff;
-  color: #fff;
-  border-color: #0b84ff;
-}
-.status {
-  margin-top: 8px;
-  font-size: 12px;
-  color: #444;
-  min-height: 18px;
+  font-size: 24px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  margin-bottom: 4px;
+  background: linear-gradient(135deg, #007aff 0%, #5856d6 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
-.hint {
-  margin-top: 4px;
+@media (prefers-color-scheme: dark) {
+  .title {
+    background: linear-gradient(135deg, #0a84ff 0%, #5e5ce6 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+}
+
+.subtitle {
+  font-size: 13px;
+  color: #86868b;
+  font-weight: 400;
+}
+
+/* Content */
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Folder Display */
+.folder-display {
+  background: #f5f5f7;
+  border-radius: 12px;
+  padding: 14px;
+}
+
+@media (prefers-color-scheme: dark) {
+  .folder-display {
+    background: #2c2c2e;
+  }
+}
+
+.label {
   font-size: 11px;
-  color: #666;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #86868b;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.folder-path {
+  font-size: 14px;
+  font-weight: 500;
+  color: #1d1d1f;
+  word-break: break-all;
+}
+
+@media (prefers-color-scheme: dark) {
+  .folder-path {
+    color: #f5f5f7;
+  }
+}
+
+/* Button */
+.btn-primary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 12px 20px;
+  background: #007aff;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  font-family: inherit;
+}
+
+.btn-primary:hover {
+  background: #0051d5;
+  transform: scale(1.02);
+}
+
+.btn-primary:active {
+  transform: scale(0.98);
+}
+
+@media (prefers-color-scheme: dark) {
+  .btn-primary {
+    background: #0a84ff;
+  }
+  
+  .btn-primary:hover {
+    background: #007aff;
+  }
+}
+
+.btn-primary svg {
+  flex-shrink: 0;
+}
+
+/* Divider */
+.divider {
+  height: 1px;
+  background: #e5e5e7;
+  margin: 8px 0;
+}
+
+@media (prefers-color-scheme: dark) {
+  .divider {
+    background: #38383a;
+  }
+}
+
+/* Info */
+.info {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.info-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 14px;
+  background: #f5f5f7;
+  border-radius: 8px;
+}
+
+@media (prefers-color-scheme: dark) {
+  .info-item {
+    background: #2c2c2e;
+  }
+}
+
+.info-label {
+  font-size: 13px;
+  color: #86868b;
+}
+
+.info-value {
+  font-size: 15px;
+  font-weight: 600;
+  color: #1d1d1f;
+}
+
+@media (prefers-color-scheme: dark) {
+  .info-value {
+    color: #f5f5f7;
+  }
+}
+
+/* Link */
+.link-settings {
+  display: block;
+  text-align: center;
+  font-size: 13px;
+  color: #007aff;
+  text-decoration: none;
+  padding: 8px;
+  transition: opacity 0.2s;
+}
+
+.link-settings:hover {
+  opacity: 0.7;
+}
+
+@media (prefers-color-scheme: dark) {
+  .link-settings {
+    color: #0a84ff;
+  }
 }
