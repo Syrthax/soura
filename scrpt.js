@@ -45,28 +45,27 @@ if (progressDots.length > 0) {
 // Auto-hide dock on scroll
 const dock = document.querySelector('.floating-dock');
 if (dock) {
-    let lastScrollY = window.scrollY;
-    let ticking = false;
+    let lastScroll = 0;
 
     window.addEventListener('scroll', () => {
-        if (!ticking) {
-            window.requestAnimationFrame(() => {
-                const currentScrollY = window.scrollY;
-                
-                if (currentScrollY > lastScrollY && currentScrollY > 100) {
-                    // Scrolling down - hide dock
-                    dock.classList.add('dock-hidden');
-                } else {
-                    // Scrolling up - show dock
-                    dock.classList.remove('dock-hidden');
-                }
-                
-                lastScrollY = currentScrollY;
-                ticking = false;
-            });
-            ticking = true;
+        const currentScroll = window.pageYOffset;
+        
+        if (currentScroll > 300) {
+            dock.style.opacity = '1';
+            dock.style.transform = 'translateX(-50%) translateY(0)';
+        } else {
+            dock.style.opacity = '0.9';
         }
-    }, { passive: true });
+        
+        // Hide dock when scrolling down, show when scrolling up
+        if (currentScroll > lastScroll && currentScroll > 500) {
+            dock.style.transform = 'translateX(-50%) translateY(150%)';
+        } else {
+            dock.style.transform = 'translateX(-50%) translateY(0)';
+        }
+        
+        lastScroll = currentScroll;
+    });
 }
 
 // Overscroll stretch effect: gently scale key sections when user scrolls beyond the page limits
